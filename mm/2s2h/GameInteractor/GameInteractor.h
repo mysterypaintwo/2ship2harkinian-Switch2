@@ -47,6 +47,7 @@ typedef enum {
     GI_INVERT_ZORA_SWIM_Y,
     GI_INVERT_DEBUG_DPAD_X,
     GI_INVERT_TELESCOPE_X,
+    GI_INVERT_TELESCOPE_Y,
     GI_INVERT_FIRST_PERSON_AIM_X,
     GI_INVERT_FIRST_PERSON_AIM_Y,
     GI_INVERT_FIRST_PERSON_GYRO_X,
@@ -511,6 +512,7 @@ void GameInteractor_ExecuteOnGameCompletion();
 void GameInteractor_ExecuteOnSceneInit(s16 sceneId, s8 spawnNum);
 void GameInteractor_ExecuteOnRoomInit(s16 sceneId, s8 roomNum);
 void GameInteractor_ExecuteAfterRoomSceneCommands(s16 sceneId, s8 roomNum);
+void GameInteractor_ExecuteOnPlayDrawWorldStart();
 void GameInteractor_ExecuteOnPlayDrawWorldEnd();
 void GameInteractor_ExecuteOnPlayDestroy();
 
@@ -525,6 +527,7 @@ void GameInteractor_ExecuteOnActorDestroy(Actor* actor);
 void GameInteractor_ExecuteOnPlayerPostLimbDraw(Player* player, s32 limbIndex);
 void GameInteractor_ExecuteOnPlayerReleaseHeldActor(PlayState* play, Player* player, Actor* heldActor);
 void GameInteractor_ExecuteOnBossDefeated(s16 actorId);
+void GameInteractor_ExecuteOnActorEntryHalfDaysBits(ActorEntry* actorEntry, s32* halfDaysBits);
 
 void GameInteractor_ExecuteOnSceneFlagSet(s16 sceneId, FlagType flagType, u32 flag);
 void GameInteractor_ExecuteOnSceneFlagUnset(s16 sceneId, FlagType flagType, u32 flag);

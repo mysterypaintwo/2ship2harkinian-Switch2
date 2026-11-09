@@ -6,7 +6,7 @@
 
 ## Discord
 
-Official Discord: https://discord.com/invite/shipofharkinian
+Official Discord: https://discord.com/invite/sxrPyuh697
 
 If you're having any trouble after reading through this `README`, feel free ask for help in the 2 Ship 2 Harkinian Support text channels. Please keep in mind that we do not condone piracy.
 
@@ -79,8 +79,8 @@ If you're having an issue with crashing, you can also change the API manually in
 Custom assets are packed in `.o2r` or `.otr` files. To use custom assets, place them in the `mods` folder.
 
 If you're interested in creating and/or packing your own custom asset `.o2r`/`.otr` files, check out the following tools:
-* [**retro - OTR and O2R generator**](https://github.com/HarbourMasters64/retro)
-* [**fast64 - Blender plugin (Note that MM is not fully supported at this time)**](https://github.com/HarbourMasters/fast64)
+* [**retro - OTR and O2R generator**](https://github.com/HarbourMasters/retro/releases/latest)
+* [**fast64 - Blender plugin**](https://github.com/HarbourMasters/fast64)
 
 # Development
 
@@ -89,9 +89,9 @@ If you want to manually compile 2S2H, please consult the [building instructions]
 # Nightly Builds
 If you want to playtest a continuous integration build, you can find them at the links below. Keep in mind that these are for playtesting only, and you will likely encounter bugs and possibly crashes. 
 
-* [Windows](https://nightly.link/HarbourMasters/2ship2harkinian/workflows/main/develop/2ship-windows.zip)
-* [Linux](https://nightly.link/HarbourMasters/2ship2harkinian/workflows/main/develop/2ship-linux.zip)
-* [Mac](https://nightly.link/HarbourMasters/2ship2harkinian/workflows/main/develop/2ship-mac.zip)
+* [Windows](https://nightly.link/2ship2harkinian/2ship2harkinian/workflows/main/develop/2ship-windows.zip)
+* [Linux](https://nightly.link/2ship2harkinian/2ship2harkinian/workflows/main/develop/2ship-linux.zip)
+* [Mac](https://nightly.link/2ship2harkinian/2ship2harkinian/workflows/main/develop/2ship-mac.zip)
 
 <a href="https://github.com/Kenix3/libultraship/">
   <picture>
