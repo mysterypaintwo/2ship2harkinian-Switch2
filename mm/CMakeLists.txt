@@ -594,10 +594,12 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "NintendoSwitch")
 	link_libraries(Vorbis::vorbisfile)
 	find_package(Ogg REQUIRED)
 	link_libraries(Ogg::ogg)
+	find_package(PNG REQUIRED)
 
 	set(ADDITIONAL_LIBRARY_DEPENDENCIES
         "libultraship;"
         SDL2::SDL2
+        PNG::PNG
         -lglad
         Threads::Threads
 			Opus::opus
