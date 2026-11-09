@@ -7,4 +7,4 @@
 [submodule "libultraship"]
 	path = libultraship
 	url = https://github.com/mysterypaintwo/libultraship-Switch2.git
-	branch = 2ship-switch
+	branch = 2ship-ounce

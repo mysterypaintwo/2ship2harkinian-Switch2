@@ -632,7 +632,7 @@ void BenMenu::AddSettings() {
                 .Max(8)
                 .DefaultValue(1));
 #endif
-#ifdef __SWITCH__
+#if defined(__SWITCH__) && !defined(__SWITCH2__)
     AddWidget(path, "Switch performance mode", WIDGET_CVAR_COMBOBOX)
         .CVar("gSwitchPerfMode")
         .Callback([](WidgetInfo& info) {
