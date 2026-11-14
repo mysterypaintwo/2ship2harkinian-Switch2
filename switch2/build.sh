@@ -22,6 +22,9 @@ if [ ! -f "$BUILD/CMakeCache.txt" ]; then
 fi
 cmake --build "$BUILD" --target 2ship_nro
 
+# Stop if the NRO is not marked as a Switch 2 program (old SDK or libnx).
+python3 "$ROOT/switch2/check_nro.py" "$BUILD/mm/2ship.nro"
+
 if [ ! -f "$ROOT/2ship.o2r" ]; then
     echo "2ship.o2r is missing. Make it with the host build first (see switch2/README.md)." >&2
     exit 1

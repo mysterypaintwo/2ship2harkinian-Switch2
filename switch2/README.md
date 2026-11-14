@@ -36,8 +36,10 @@ Supported ROMs (SHA-1):
 
 ## Build from source
 
-You need devkitPro with `switch-dev` and `switch-portlibs`, and the ounce SDK
-installed into `$DEVKITPRO` (it adds `libounce` and `portlibs/switch2`).
+You need devkitPro with `switch-dev` and `switch-portlibs`, and the ounce
+devkit 20261114 or newer unpacked into `$DEVKITPRO` (it adds `libounce` and
+`portlibs/switch2`). Older SDKs are refused: their NROs are not marked as
+Switch 2 programs, and the console warns about them.
 
 1. Make `2ship.o2r` and `mm.o2r` with a host (computer) build. Put the ROM at
    `OTRExporter/baserom.z64` (big-endian `.z64` format), then from the repo
@@ -62,11 +64,19 @@ installed into `$DEVKITPRO` (it adds `libounce` and `portlibs/switch2`).
 
 ## Changes for Switch 2
 
-- `switch2/cmake/Switch2.cmake`: the CMake toolchain. It is devkitPro's
-  `Switch.cmake` pointed at libounce, with the Switch 2 portlibs (EGL and GL
-  on OunceVK through Zink) before the Switch 1 portlibs. `CMAKE_SYSTEM_NAME`
-  stays `NintendoSwitch`, so the Switch code is used.
-- `switch2/cmake/Platform/NintendoSwitch.cmake`: adds `-D__SWITCH2__`.
-- libultraship (`ounce` branch): the Switch 1 CPU clock control is off, and
-  the display size is 1920x1080 in handheld and docked mode.
+- `switch2/cmake/Switch2.cmake`: the CMake toolchain. It loads the devkit's
+  own `$DEVKITPRO/libounce/cmake/Switch2.cmake` (libounce, the Switch 2
+  portlibs with EGL and GL on OunceVK through Zink first, `-D__SWITCH2__` and
+  the Switch 2 CPU flags). `CMAKE_SYSTEM_NAME` stays `NintendoSwitch`, so the
+  Switch code is used.
+- `switch2/check_nro.py`: `build.sh` runs it on `2ship.nro` to check that
+  libounce marked it as a Switch 2 program (the `OUN0` record).
+- `mm/CMakeLists.txt`: on Switch 2 the homebrew menu title is
+  "HarbourMasters - 2Ship", next to "HarbourMasters - Shipwright".
+- libultraship (`2ship-ounce` branch): the Switch 1 CPU clock control is off,
+  and the display size is 1920x1080 in handheld and docked mode. OpenGL is a
+  4.1 core context with the core-profile shaders (as on macOS): Switch 2's
+  OpenGL is Zink on Vulkan, and the Switch 1 path (GLSL 1.10/1.30, no vertex
+  array object) drew nothing there. The log has the OpenGL version and
+  renderer.
 - The "Switch performance mode" menu is hidden on Switch 2.
