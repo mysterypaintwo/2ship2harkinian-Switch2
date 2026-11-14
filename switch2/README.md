@@ -20,6 +20,22 @@ Switch 2. It runs as homebrew from the homebrew menu (hbloader).
 This zip does not have `mm.o2r`. It is made from the ROM, so it has game
 data that cannot be shared. Make it yourself from a ROM you dumped.
 
+## Playing
+
+- Press `-` to open the menu.
+- Default buttons: B is A, Y is B, A is C-down, X is C-left, R is C-right,
+  ZL is Z, ZR is R. The right stick is also the C buttons. If you played an
+  earlier build, your saved controls stay: reset them in the input editor to
+  get these.
+- Only the US ROMs are supported, so the game is in English only.
+- Quit: use "the power button at the top of the menu" in the menu to go back to the homebrew menu.
+  Closing the game from the HOME menu also works.
+- 120 FPS: on the Switch 2 screen, set the FPS slider in the graphics
+  settings above 60. With vsync on, the game is held to the display's refresh
+  rate (120 Hz handheld, 60 Hz on most TVs).
+- Bug reports: the log is in `/switch/2s2h/logs/`. Send it with the report,
+  especially after a crash.
+
 ## Make mm.o2r
 
 The console cannot make `mm.o2r`. Make it on a computer with the PC version

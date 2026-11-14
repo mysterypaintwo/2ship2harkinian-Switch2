@@ -279,6 +279,11 @@ namespace BenGui {
 extern std::shared_ptr<BenGui::BenMenu> mBenMenu;
 }
 
+#ifdef __SWITCH__
+// Set by the Quit button of the loader popups.
+static bool sQuitFromLoader = false;
+#endif
+
 void OTRGlobals::RunExtract(int argc, char* argv[]) {
     bool extractDone = false;
     ExtractSteps extractStep = ES_PORT_ARCHIVE;
@@ -310,11 +315,12 @@ void OTRGlobals::RunExtract(int argc, char* argv[]) {
     // Consoles cannot extract. Stop only if the ROM archive is outdated.
     if (shouldRegen) {
 #if defined(__SWITCH__)
-        BenGui::RegisterPopup("Outdated ROM Archives",
-                              "\x1b[2;2HYou've launched 2Ship with an old ROM O2R file."
-                              "\x1b[4;2HPlease regenerate a new ROM O2R and relaunch."
-                              "\x1b[6;2HPress the Home button to exit...",
-                              "OK", "", [&]() { exit(1); });
+        BenGui::RegisterPopup("Outdated ROM Archive",
+                              "Your mm.o2r was made by a different major version of\n"
+                              "2 Ship 2 Harkinian. Make a new one with the PC version\n"
+                              "that matches this build (" + std::to_string(gBuildVersionMajor) +
+                                  ".x), copy it to /switch/2s2h/,\nand start the game again.",
+                              "Quit", "", [&]() { sQuitFromLoader = true; });
 #elif defined(__WIIU__)
         BenGui::RegisterPopup("Outdated ROM Archives",
                               "You've launched 2Ship with an old a ROM O2R file.\n\n"
@@ -369,8 +375,7 @@ void OTRGlobals::RunExtract(int argc, char* argv[]) {
                     std::string msg;
 
 #if defined(__SWITCH__)
-                    msg = "\x1b[4;2HPlease re-extract it from the download.\n"
-                          "\x1b[6;2HPress the Home button to exit...";
+                    msg = "Please copy 2ship.o2r from the download to /switch/2s2h/.";
 #elif defined(__WIIU__)
                     msg = "Please extract the 2ship.o2r from the 2 Ship 2 Harkinian download\nto your folder.\n\nPress "
                           "and hold the power\n"
@@ -381,7 +386,11 @@ void OTRGlobals::RunExtract(int argc, char* argv[]) {
 #endif
                     std::string title =
                         !std::filesystem::exists(portArchivePath) ? "Missing 2ship.o2r" : "2ship.o2r is outdated";
+#ifdef __SWITCH__
+                    BenGui::RegisterPopup(title, msg, "Quit", "", [&]() { sQuitFromLoader = true; });
+#else
                     BenGui::RegisterPopup(title, msg, "OK", "", [&]() { exit(1); });
+#endif
                 }
                 continue;
             }
@@ -619,6 +628,16 @@ void OTRGlobals::RunExtract(int argc, char* argv[]) {
         gui->EndDraw();
         benFast3dWindow->EndFrame();
         ImGui::PopStyleColor(2);
+#ifdef __SWITCH__
+        if (sQuitFromLoader || !benFast3dWindow->IsRunning()) {
+            // Close the window and GL before exiting, so the app returns to the
+            // homebrew menu. exit() from inside the popup left GL open.
+            OTRGlobals::Instance->context = nullptr;
+            benFast3dWindow = nullptr;
+            Ship::Context::DestroyInstance();
+            exit(0);
+        }
+#endif
     }
 
 #ifdef __SWITCH__
@@ -660,7 +679,13 @@ void OTRGlobals::Initialize() {
                                               CVarGetInteger("gSettings.AutoCaptureMouse", 1));
     context->GetWindow()->SetForceCursorVisibility(CVarGetInteger("gSettings.CursorVisibility", 0));
 
+#ifdef __SWITCH__
+    // Audio is made once per game frame. Keep more of it queued (77 ms, not
+    // 52 ms) so a slow frame does not empty the buffer and crackle.
+    context->InitAudio({ .SampleRate = 32000, .SampleLength = 1024, .DesiredBuffered = 2480 });
+#else
     context->InitAudio({ .SampleRate = 32000, .SampleLength = 1024, .DesiredBuffered = 1680 });
+#endif
 
     SPDLOG_INFO("Starting 2 Ship 2 Harkinian version {} (Branch: {} | Commit: {})", (char*)gBuildVersion,
                 (char*)gGitBranch, (char*)gGitCommitHash);
