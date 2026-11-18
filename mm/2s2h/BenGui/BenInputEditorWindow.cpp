@@ -9,6 +9,8 @@
 #include "2s2h/BenGui/BenGui.hpp"
 #ifndef __WIIU__
 #include <ship/controller/controldevice/controller/mapping/sdl/SDLAxisDirectionToButtonMapping.h>
+// Last include: on Switch 2 it scales the sizes pushed with ImGui::PushStyleVar.
+#include "Switch2UiScale.h"
 #endif
 
 #define SCALE_IMGUI_SIZE(value) ((value / 13.0f) * ImGui::GetFontSize())

@@ -7,6 +7,8 @@
 #include "2s2h/ShipUtils.h"
 #include <spdlog/fmt/fmt.h>
 #include "2s2h/BenPort.h"
+// Last include: on Switch 2 it scales the sizes pushed with ImGui::PushStyleVar.
+#include "Switch2UiScale.h"
 
 namespace UIWidgets {
 

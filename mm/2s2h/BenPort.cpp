@@ -1934,6 +1934,12 @@ extern "C" s32* ResourceMgr_LoadCSByName(const char* path) {
 
 ImFont* OTRGlobals::CreateFontWithSize(float size, std::string fontPath) {
     auto mImGuiIo = &ImGui::GetIO();
+#ifdef __SWITCH2__
+    // The Switch 2 draws the UI at 1080p on a handheld screen: make the fonts
+    // 1.5x, at their real size so that they stay sharp (the menu's padding is
+    // scaled in BenGui/Switch2UiScale.h).
+    size *= 1.5f;
+#endif
     ImFont* font;
     if (fontPath == "") {
         ImFontConfig fontCfg = ImFontConfig();

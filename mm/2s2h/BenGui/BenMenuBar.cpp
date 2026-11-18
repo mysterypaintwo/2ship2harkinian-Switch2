@@ -4,6 +4,8 @@
 #include <string>
 
 #include <fast/Fast3dGui.h>
+// Last include: on Switch 2 it scales the sizes pushed with ImGui::PushStyleVar.
+#include "Switch2UiScale.h"
 
 namespace BenGui {
 

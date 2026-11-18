@@ -18,7 +18,17 @@ extern "C" {
 #include "functions.h"
 extern PlayState* gPlayState;
 }
+// Last include: on Switch 2 it scales the sizes pushed with ImGui::PushStyleVar.
+#include "Switch2UiScale.h"
 std::vector<ImVec2> windowTypeSizes = { {} };
+
+// Fixed widths in the menu layout (sidebar, header search box). On Switch 2 the
+// fonts are 1.5x and the pushed padding 3x (Switch2UiScale.h), so make them wider.
+#ifdef __SWITCH2__
+static constexpr float kMenuLayoutScale = 2.0f;
+#else
+static constexpr float kMenuLayoutScale = 1.0f;
+#endif
 
 extern std::unordered_map<s16, const char*> warpPointSceneList;
 extern void Warp();
@@ -617,7 +627,7 @@ void Menu::DrawElement() {
     float headerWidth = style.ItemSpacing.x;
     bool headerSearch = !CVarGetInteger("gSettings.Menu.SidebarSearch", 0);
     if (headerSearch) {
-        headerWidth += 200.0f + style.ItemSpacing.x + style.FramePadding.x;
+        headerWidth += 200.0f * kMenuLayoutScale + style.ItemSpacing.x + style.FramePadding.x;
     }
     for (auto& label : menuOrder) {
         ImVec2 size = ImGui::CalcTextSize(label.c_str());
@@ -702,11 +712,11 @@ void Menu::DrawElement() {
         color.w = 0.6f;
         ImGui::PushStyleColor(ImGuiCol_FrameBg, color);
         ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 3.0f);
-        menuSearch.Draw("##search", 200.0f);
+        menuSearch.Draw("##search", 200.0f * kMenuLayoutScale);
         menuSearchText = menuSearch.InputBuf;
         menuSearchText.erase(std::remove(menuSearchText.begin(), menuSearchText.end(), ' '), menuSearchText.end());
         if (menuSearchText.length() < 1) {
-            ImGui::SameLine(headerWidth - 200.0f + style.ItemSpacing.x);
+            ImGui::SameLine(headerWidth - 200.0f * kMenuLayoutScale + style.ItemSpacing.x);
             ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 0.4f), "Search...");
         }
         ImGui::PopStyleVar();
@@ -775,7 +785,7 @@ void Menu::DrawElement() {
     float sectionHeight = menuSize.y - headerHeight - 4 - style.ItemSpacing.y * 2;
     float columnHeight = sectionHeight - style.ItemSpacing.y * 4;
     ImGui::SetNextWindowPos(pos + style.ItemSpacing * 2);
-    float sidebarWidth = 200 - style.ItemSpacing.x;
+    float sidebarWidth = 200 * kMenuLayoutScale - style.ItemSpacing.x;
 
     const char* sidebarCvar = menuEntries.at(headerIndex).sidebarCvar;
 

@@ -12,8 +12,8 @@ Switch 2. It runs as homebrew from the homebrew menu (hbloader).
    sdmc:/switch/2s2h/2ship.o2r
    ```
 
-2. Make `mm.o2r` from your own Majora's Mask ROM (see below), and copy it to
-   `sdmc:/switch/2s2h/`.
+2. Make `mm.o2r` from your own Majora's Mask ROM (see `GAME-DATA.md`), and
+   copy it to `sdmc:/switch/2s2h/`.
 
 3. Start 2 Ship 2 Harkinian from the homebrew menu.
 
@@ -34,16 +34,17 @@ data that cannot be shared. Make it yourself from a ROM you dumped.
   settings above 60. With vsync on, the game is held to the display's refresh
   rate (120 Hz handheld, 60 Hz on most TVs).
 - Bug reports: the log is in `/switch/2s2h/logs/`. Send it with the report,
-  especially after a crash.
+  especially after a crash: the folder then also has a `crash-<date>.txt`
+  file that says where the game crashed.
 
 ## Make mm.o2r
 
-The console cannot make `mm.o2r`. Make it on a computer with the PC version
-of 2 Ship 2 Harkinian from
-https://github.com/2ship2harkinian/2ship2harkinian/releases. Its major version
-must match this build (5.x): an `mm.o2r` from another major version is
-refused. Open the PC version with your ROM, and it writes `mm.o2r` to its
-folder.
+`GAME-DATA.md` (next to this file) explains it step by step. In short: the
+console cannot make `mm.o2r`. Make it on a computer with the PC build of the
+same version as this Switch 2 build, from
+<https://github.com/mysterypaintwo/2ship2harkinian-Switch2/releases> (Windows,
+macOS and Linux). This build is 5.1.0, from the development line: an `mm.o2r`
+from the public PC release 5.0.1 has different game data and can crash.
 
 Supported ROMs (SHA-1):
 
