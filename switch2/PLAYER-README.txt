@@ -67,8 +67,8 @@ Please include:
 - Whether the game crashed, froze, or kept running.
 - The /switch/2s2h/logs/ folder from your SD card.
 
-Report bugs at:
-https://github.com/mysterypaintwo/2ship2harkinian-Switch2/issues
+Send your report to whoever shared this test build with you, or where you
+downloaded it.
 
 Do not share your ROM or mm.o2r when you report a bug.
 
