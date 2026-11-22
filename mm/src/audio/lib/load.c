@@ -20,6 +20,17 @@
 #include "2s2h/GameInteractor/GameInteractor.h"
 #include "BenPort.h"
 #include <libultraship/log/luslog.h>
+
+// 2S2H [Port] OSMesg is 8 bytes on 64-bit platforms, so receiving straight into
+// a 4-byte variable writes past it. Receive into a whole OSMesg instead.
+static inline s32 RecvMesgU32(OSMesgQueue* mq, u32* out, s32 flag) {
+    OSMesg mesg;
+    s32 result = osRecvMesg(mq, &mesg, flag);
+    if (result == 0) {
+        *out = mesg.data32;
+    }
+    return result;
+}
 // Windows deprecated the use of `strdup` it uses _strdup. Linux/Unix doesn't have _strdup.
 #ifdef _MSC_VER
 #define strdup _strdup
@@ -1948,11 +1959,11 @@ s32 AudioLoad_ProcessSamplePreloads(s32 resetStatus) {
     if (gAudioCtx.preloadSampleStackTop > 0) {
         if (resetStatus != 0) {
             // Clear result queue and preload stack and return.
-            osRecvMesg(&gAudioCtx.preloadSampleQueue, (OSMesg*)&preloadIndex, OS_MESG_NOBLOCK);
+            RecvMesgU32(&gAudioCtx.preloadSampleQueue, &preloadIndex, OS_MESG_NOBLOCK);
             gAudioCtx.preloadSampleStackTop = 0;
             return false;
         }
-        if (osRecvMesg(&gAudioCtx.preloadSampleQueue, (OSMesg*)&preloadIndex, OS_MESG_NOBLOCK) == -1) {
+        if (RecvMesgU32(&gAudioCtx.preloadSampleQueue, &preloadIndex, OS_MESG_NOBLOCK) == -1) {
             // Previous preload is not done yet.
             return false;
         }
@@ -2259,7 +2270,7 @@ void AudioLoad_ProcessScriptLoads(void) {
     u32 sp20;
     s8* isDone;
 
-    if (osRecvMesg(&sScriptLoadQueue, (OSMesg*)&sp20, OS_MESG_NOBLOCK) != -1) {
+    if (RecvMesgU32(&sScriptLoadQueue, &sp20, OS_MESG_NOBLOCK) != -1) {
         temp = sp20 >> 24;
         isDone = sScriptLoadDonePointers[temp];
         if (isDone != NULL) {

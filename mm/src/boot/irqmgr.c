@@ -2,6 +2,17 @@
 #include "stackcheck.h"
 #include "z64thread.h"
 
+// 2S2H [Port] OSMesg is 8 bytes on 64-bit platforms, so receiving straight into
+// a 4-byte variable writes past it. Receive into a whole OSMesg instead.
+static inline s32 RecvMesgU32(OSMesgQueue* mq, u32* out, s32 flag) {
+    OSMesg mesg;
+    s32 result = osRecvMesg(mq, &mesg, flag);
+    if (result == 0) {
+        *out = mesg.data32;
+    }
+    return result;
+}
+
 vs32 gIrqMgrResetStatus = 0;
 volatile OSTime sIrqMgrResetTime = 0;
 volatile OSTime gIrqMgrRetraceTime = 0;
@@ -147,7 +158,7 @@ void IrqMgr_ThreadEntry(IrqMgr* irqmgr) {
             ;
         }
 
-        osRecvMesg(&irqmgr->irqQueue, (OSMesg*)&interrupt, OS_MESG_BLOCK);
+        RecvMesgU32(&irqmgr->irqQueue, &interrupt, OS_MESG_BLOCK);
         switch (interrupt) {
             case 0x29A:
                 IrqMgr_HandleRetrace(irqmgr);

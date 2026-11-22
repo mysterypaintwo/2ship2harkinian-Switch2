@@ -121,6 +121,7 @@ CrowdControl* CrowdControl::Instance;
 #include <ship/window/FileDropMgr.h>
 #include <ship/window/gui/resource/FontFactory.h>
 #include "2s2h/Enhancements/Audio/AudioCollection.h"
+#include "ship/port/switch/Switch2Debug.h"
 #include "BenGui/BenInputEditorWindow.h"
 
 OTRGlobals* OTRGlobals::Instance;
@@ -680,9 +681,9 @@ void OTRGlobals::Initialize() {
     context->GetWindow()->SetForceCursorVisibility(CVarGetInteger("gSettings.CursorVisibility", 0));
 
 #ifdef __SWITCH__
-    // Audio is made once per game frame. Keep more of it queued (77 ms, not
+    // Audio is made once per game frame. Keep more of it queued (150 ms, not
     // 52 ms) so a slow frame does not empty the buffer and crackle.
-    context->InitAudio({ .SampleRate = 32000, .SampleLength = 1024, .DesiredBuffered = 2480 });
+    context->InitAudio({ .SampleRate = 32000, .SampleLength = 1024, .DesiredBuffered = 4800 });
 #else
     context->InitAudio({ .SampleRate = 32000, .SampleLength = 1024, .DesiredBuffered = 1680 });
 #endif
@@ -893,15 +894,30 @@ void OTRAudio_Thread() {
         int samples_left = AudioPlayer_Buffered();
         u32 num_audio_samples = samples_left < AudioPlayer_GetDesiredBuffered() ? SAMPLES_HIGH : SAMPLES_LOW;
 
+#ifdef __SWITCH__
+        // Audio is made once per drawn frame, so a late frame leaves too little
+        // of it: the music slows down and the queue runs dry. The N64 made audio
+        // on its own clock. Make extra updates until the queue is back at its
+        // target. This stays inside the frame's audio/game handoff, and waits
+        // while the audio heap is being reset.
+        constexpr int kMaxAudioUpdates = 9;
+        int audioUpdates = AUDIO_FRAMES_PER_UPDATE;
+        while (gAudioCtx.resetStatus == 0 && audioUpdates < kMaxAudioUpdates &&
+               samples_left + audioUpdates * (int)num_audio_samples < AudioPlayer_GetDesiredBuffered()) {
+            audioUpdates++;
+        }
+        s16 audio_buffer[SAMPLES_HIGH * NUM_AUDIO_CHANNELS * kMaxAudioUpdates];
+#else
+        int audioUpdates = AUDIO_FRAMES_PER_UPDATE;
         // 3 is the maximum authentic frame divisor.
         s16 audio_buffer[SAMPLES_HIGH * NUM_AUDIO_CHANNELS * 3];
-        for (int i = 0; i < AUDIO_FRAMES_PER_UPDATE; i++) {
+#endif
+        for (int i = 0; i < audioUpdates; i++) {
             AudioMgr_CreateNextAudioBuffer(audio_buffer + i * (num_audio_samples * NUM_AUDIO_CHANNELS),
                                            num_audio_samples);
         }
 
-        AudioPlayer_Play((u8*)audio_buffer,
-                         num_audio_samples * (sizeof(int16_t) * NUM_AUDIO_CHANNELS * AUDIO_FRAMES_PER_UPDATE));
+        AudioPlayer_Play((u8*)audio_buffer, num_audio_samples * (sizeof(int16_t) * NUM_AUDIO_CHANNELS * audioUpdates));
 
         audio.processing = false;
         audio.cv_from_thread.notify_one();
@@ -913,6 +929,8 @@ extern "C" void OTRAudio_Init() {
     // Precache all our samples, sequences, etc...
     ResourceMgr_LoadDirectory("audio");
 
+    Switch2Debug_Start();
+    Switch2Debug_Phase(1, "init:audio-thread");
     if (!audio.running) {
         audio.running = true;
         audio.thread = std::thread(OTRAudio_Thread);
@@ -1048,8 +1066,11 @@ extern "C" void InitOTR(int argc, char* argv[]) {
 
     OTRMessage_Init();
     OTRAudio_Init();
+    Switch2Debug_Phase(1, "init:audio-done");
     OTRExtScanner();
+    Switch2Debug_Phase(1, "init:ext-scanner-done");
     PlayerCustomFlipbooks_Patch();
+    Switch2Debug_Phase(1, "init:flipbooks-done");
 
     // Just came up with arbitrary numbers that seemed to work, this is
     // usually set once(?) in currently stubbed out areas of code.
@@ -1309,7 +1330,9 @@ extern "C" void Graph_ProcessGfxCommands(Gfx* commands) {
         count = 1;
     }
 
+    Switch2Debug_Phase(1, "draw");
     RunCommands(commands, start_time, step, next_original_frame, count);
+    Switch2Debug_Phase(1, "game");
 
     last_fps = fps;
     last_update_rate = R_UPDATE_RATE;

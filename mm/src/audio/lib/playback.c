@@ -196,7 +196,9 @@ void AudioPlayback_ProcessNotes(void) {
         sampleState = &gAudioCtx.sampleStateList[gAudioCtx.sampleStateOffset + i];
         playbackState = &note->playbackState;
         if (playbackState->parentLayer != NO_LAYER) {
-#ifndef __WIIU__
+// 2S2H [Port] Not on Switch: Switch 2 loads the program at 0x8000000, so every real
+// layer pointer is below this limit and every note was skipped.
+#if !defined(__WIIU__) && !defined(__SWITCH__)
             // OTRTODO: This skips playback if the pointer is below where memory on the N64 normally would be.
             // This does not translate well to modern platforms and how they map memory.
             // Considering that this check is not present in OoT/SoH, we may be able to remove this altogether.
@@ -419,7 +421,8 @@ Drum* AudioPlayback_GetDrum(s32 fontId, s32 drumId) {
 }
 
 SoundEffect* AudioPlayback_GetSoundEffect(s32 fontId, s32 sfxId) {
-    SoundEffect* soundEffect;
+    // 2S2H [Port] Was uninitialized: an out-of-range sfxId used a garbage pointer.
+    SoundEffect* soundEffect = NULL;
 
     if (fontId == 0xFFFF) {
         return NULL;

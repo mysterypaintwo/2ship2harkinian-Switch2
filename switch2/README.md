@@ -33,9 +33,12 @@ data that cannot be shared. Make it yourself from a ROM you dumped.
 - 120 FPS: on the Switch 2 screen, set the FPS slider in the graphics
   settings above 60. With vsync on, the game is held to the display's refresh
   rate (120 Hz handheld, 60 Hz on most TVs).
-- Bug reports: the log is in `/switch/2s2h/logs/`. Send it with the report,
-  especially after a crash: the folder then also has a `crash-<date>.txt`
-  file that says where the game crashed.
+- Bug reports: the log is in `/switch/2s2h/logs/`. Send it with the report.
+  Some crashes also leave a `crash-<date>.txt` file there. CPU faults do not:
+  the console does not pass them to homebrew.
+- Debugging: with a `debug-host.txt` (a computer's IP) next to the NRO, the game
+  streams its state over UDP to `switch2/debug_listener.py`. Without that file
+  the stream and audio diagnostics are off.
 
 ## Make mm.o2r
 

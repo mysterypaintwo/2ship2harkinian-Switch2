@@ -6,6 +6,23 @@
 #include "global.h"
 #include "audio/effects.h"
 #include "audio/load.h"
+#include "ship/port/switch/Switch2Debug.h"
+#include <stdarg.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <string.h>
+#include <sys/stat.h>
+
+// 2S2H [Port] OSMesg is 8 bytes on 64-bit platforms, so receiving straight into
+// a 4-byte variable writes past it. Receive into a whole OSMesg instead.
+static inline s32 RecvMesgU32(OSMesgQueue* mq, u32* out, s32 flag) {
+    OSMesg mesg;
+    s32 result = osRecvMesg(mq, &mesg, flag);
+    if (result == 0) {
+        *out = mesg.data32;
+    }
+    return result;
+}
 
 AudioTask* AudioThread_UpdateImpl(void);
 void AudioThread_SetFadeOutTimer(s32 seqPlayerIndex, s32 fadeTimer);
@@ -16,6 +33,114 @@ void AudioThread_ProcessChannelCmd(SequenceChannel* channel, AudioCmd* cmd);
 s32 AudioThread_GetSamplePos(s32 seqPlayerIndex, s32 channelIndex, s32 layerIndex, s32* loopEnd, s32* samplePosInt);
 s32 AudioThread_CountAndReleaseNotes(s32 flags);
 s32 AudioThread_ScheduleProcessCmds(void);
+
+// 2S2H [Port] Diagnostic: dumps the audio engine's state, to compare a console
+// run with a computer run. Written to logs/audio-diag.txt and the debug stream.
+static FILE* sDiagFile = NULL;
+
+static void AudioDiag_Emit(const char* fmt, ...) {
+    char line[256];
+    va_list args;
+    va_start(args, fmt);
+    vsnprintf(line, sizeof(line), fmt, args);
+    va_end(args);
+    if (sDiagFile != NULL) {
+        fprintf(sDiagFile, "%s\n", line);
+    }
+    Switch2Debug_Log(line);
+}
+
+static u32 AudioDiag_Hash(const void* data, size_t size) {
+    const u8* bytes = data;
+    u32 hash = 2166136261u;
+    for (size_t i = 0; i < size; i++) {
+        hash = (hash ^ bytes[i]) * 16777619u;
+    }
+    return hash;
+}
+
+static void AudioDiag_Frame(void) {
+    static u32 sCalls = 0;
+    if (!Switch2Debug_Enabled()) {
+        return;
+    }
+    AudioBufferParameters* b = &gAudioCtx.audioBufferParameters;
+    u32 call = sCalls++;
+    if (call == 0) {
+        mkdir("logs", 0777);
+        sDiagFile = fopen("logs/audio-diag.txt", "w");
+        AudioDiag_Emit("D sizes ctx=%zu player=%zu channel=%zu layer=%zu note=%zu play=%zu sampleState=%zu sample=%zu",
+                       sizeof(AudioContext), sizeof(SequencePlayer), sizeof(SequenceChannel), sizeof(SequenceLayer),
+                       sizeof(Note), sizeof(NotePlaybackState), sizeof(NoteSampleState), sizeof(Sample));
+    }
+    if (call > 7200 || (call % 60) != 0) {
+        return;
+    }
+    AudioDiag_Emit("D %u params reset=%d freq=%u ai=%u target=%d max=%d min=%d updates=%d perUpdate=%d/%d/%d players=%d "
+                   "rate=%.6f inv=%.6f invScaled=%.8f scaled=%.6f notes=%d maxTempo=%d mode=%d",
+                   call, gAudioCtx.resetStatus, b->samplingFreq, b->aiSamplingFreq, b->numSamplesPerFrameTarget,
+                   b->numSamplesPerFrameMax, b->numSamplesPerFrameMin, b->updatesPerFrame, b->numSamplesPerUpdate,
+                   b->numSamplesPerUpdateMax, b->numSamplesPerUpdateMin, b->numSequencePlayers, b->resampleRate,
+                   b->updatesPerFrameInv, b->updatesPerFrameInvScaled, b->updatesPerFrameScaled, gAudioCtx.numNotes,
+                   gAudioCtx.maxTempo, gAudioCtx.soundMode);
+    if (gAudioCtx.adsrDecayTable != NULL && gAudioCtx.resetStatus == 0) {
+        f32* t = gAudioCtx.adsrDecayTable;
+        AudioDiag_Emit("D %u adsr hash=%08x t0=%g t1=%g t23=%g t143=%g t250=%g t255=%g", call,
+                       AudioDiag_Hash(t, 0x100 * sizeof(f32)), t[0], t[1], t[23], t[143], t[250], t[255]);
+    }
+    for (s32 i = 0; i < b->numSequencePlayers && i < 5; i++) {
+        SequencePlayer* p = &gAudioCtx.seqPlayers[i];
+        AudioDiag_Emit("D %u player %d on=%d mute=%d seq=%u tempo=%u fade=%.4f vol=%.4f scale=%.4f applied=%.4f bend=%.4f port=%.4f",
+                       call, i, p->enabled, p->muted, p->seqId, p->tempo, p->fadeVolume, p->volume, p->fadeVolumeScale,
+                       p->appliedFadeVolume, p->bend, p->portVolumeScale);
+    }
+    s32 active = 0;
+    for (s32 i = 0; i < gAudioCtx.numNotes; i++) {
+        Note* n = &gAudioCtx.notes[i];
+        if (!n->sampleState.bitField0.enabled) {
+            continue;
+        }
+        if (active++ < 4) {
+            u32 sampleInfo = 0, codec = 0, size = 0;
+            f32 tuning = 0.0f;
+            if (!n->sampleState.bitField1.isSyntheticWave && n->sampleState.tunedSample != NULL &&
+                n->sampleState.tunedSample->sample != NULL) {
+                Sample* sample = n->sampleState.tunedSample->sample;
+                codec = sample->codec;
+                size = sample->size;
+                tuning = n->sampleState.tunedSample->tuning;
+                sampleInfo = AudioDiag_Hash(sample->sampleAddr, size < 64 ? size : 64);
+            }
+            AudioDiag_Emit("D %u note %d gain=%u L=%u R=%u freq=%u reverb=%u status=%u fadeOut=%.5f codec=%u size=%u tuning=%.4f hash=%08x",
+                           call, i, n->sampleState.gain, n->sampleState.targetVolLeft, n->sampleState.targetVolRight,
+                           n->sampleState.frequencyFixedPoint, n->sampleState.targetReverbVol,
+                           n->playbackState.adsr.action.s.status, n->playbackState.adsr.fadeOutVel, codec, size, tuning,
+                           sampleInfo);
+        }
+    }
+    AudioDiag_Emit("D %u active notes %d", call, active);
+    if (sDiagFile != NULL) {
+        fflush(sDiagFile);
+    }
+}
+
+// 2S2H [Port] Diagnostic: with no-audio-synth.txt next to the program, commands
+// and loads still run, but no sequences or samples are processed.
+static bool AudioDiag_SynthDisabled(void) {
+    static s32 sDisabled = -1;
+    if (!Switch2Debug_Enabled()) {
+        return false;
+    }
+    if (sDisabled < 0) {
+        FILE* file = fopen("no-audio-synth.txt", "r");
+        sDisabled = file != NULL;
+        if (file != NULL) {
+            fclose(file);
+            Switch2Debug_Log("S audio synthesis disabled by no-audio-synth.txt");
+        }
+    }
+    return sDisabled != 0;
+}
 
 AudioTask* AudioThread_Update(void) {
     return AudioThread_UpdateImpl();
@@ -40,6 +165,7 @@ void AudioMgr_CreateNextAudioBuffer(s16* samples, u32 num_samples) {
 
     gAudioCtx.totalTaskCount++;
 
+    Switch2Debug_Phase(0, "loads");
     AudioLoad_DecreaseSampleDmaTtls();
     AudioLoad_ProcessLoads(gAudioCtx.resetStatus);
     AudioLoad_ProcessScriptLoads();
@@ -52,6 +178,7 @@ void AudioMgr_CreateNextAudioBuffer(s16* samples, u32 num_samples) {
         }
     }
 
+    Switch2Debug_Phase(0, "commands");
     int j = 0;
     if (gAudioCtx.resetStatus == 0) {
         // msg = 0000RREE R = read pos, E = End Pos
@@ -64,7 +191,16 @@ void AudioMgr_CreateNextAudioBuffer(s16* samples, u32 num_samples) {
         }
     }
     s32 writtenCmds;
-    AudioSynth_Update(gAudioCtx.curAbiCmdBuf, &writtenCmds, samples, num_samples);
+    Switch2Debug_Phase(0, "synth");
+    if (AudioDiag_SynthDisabled()) {
+        memset(samples, 0, num_samples * 2 * sizeof(s16));
+    } else {
+        AudioSynth_Update(gAudioCtx.curAbiCmdBuf, &writtenCmds, samples, num_samples);
+    }
+    Switch2Debug_Phase(0, "diag");
+    AudioDiag_Frame();
+    Switch2Debug_Poll();
+    Switch2Debug_Phase(0, "idle");
     gAudioCtx.audioRandom = (gAudioCtx.audioRandom + gAudioCtx.totalTaskCount) * osGetCount();
 }
 
@@ -488,7 +624,7 @@ void AudioThread_ProcessCmds(u32 msg) {
 u32 AudioThread_GetExternalLoadQueueMsg(u32* retMsg) {
     u32 msg;
 
-    if (osRecvMesg(&gAudioCtx.externalLoadQueue, (OSMesg*)&msg, OS_MESG_NOBLOCK) == -1) {
+    if (RecvMesgU32(&gAudioCtx.externalLoadQueue, &msg, OS_MESG_NOBLOCK) == -1) {
         *retMsg = 0;
         return 0;
     }
@@ -522,7 +658,7 @@ s32 func_80193C5C(void) {
 void AudioThread_WaitForAudioResetQueueP(void) {
     // macro?
     // clang-format off
-    s32 chk = -1; s32 msg; do {} while (osRecvMesg(gAudioCtx.audioResetQueueP, (OSMesg*)&msg, OS_MESG_NOBLOCK) != chk);
+    s32 chk = -1; s32 msg; do {} while (RecvMesgU32(gAudioCtx.audioResetQueueP, (u32*)&msg, OS_MESG_NOBLOCK) != chk);
     // clang-format on
 }
 

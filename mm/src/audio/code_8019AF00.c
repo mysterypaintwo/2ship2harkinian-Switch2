@@ -6490,9 +6490,8 @@ u32 Audio_SetAmbienceRandomBend(u8 seqScriptValIn, SequenceChannel* channel) {
         return seqScriptValOut;
     }
 
-#ifdef AVOID_UB
+    // 2S2H [Port] Without this the sequence script reads a garbage return value.
     return seqScriptValOut;
-#endif
 }
 
 void Audio_Init(void) {

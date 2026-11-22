@@ -34,7 +34,7 @@ rm -rf "$DIST"
 mkdir -p "$DIST/switch/2s2h"
 cp "$BUILD/mm/2ship.nro" "$DIST/switch/2s2h/2ship.nro"
 cp "$ROOT/2ship.o2r" "$DIST/switch/2s2h/2ship.o2r"
-cp "$ROOT/switch2/README.md" "$DIST/readme.txt"
+cp "$ROOT/switch2/PLAYER-README.txt" "$DIST/readme.txt"
 cp "$ROOT/switch2/GAME-DATA.md" "$DIST/GAME-DATA.md"
 
 (cd "$DIST" && rm -f ../2s2h-switch2.zip && zip -qr ../2s2h-switch2.zip switch readme.txt GAME-DATA.md)

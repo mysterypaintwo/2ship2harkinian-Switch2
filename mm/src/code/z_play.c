@@ -1,4 +1,5 @@
 #include "z64.h"
+#include "ship/port/switch/Switch2Debug.h"
 #include "regs.h"
 #include "functions.h"
 #include "z64vismono.h"
@@ -1610,6 +1611,7 @@ void Play_Draw(PlayState* this) {
         BombersNotebook_Draw(&sBombersNotebook, gfxCtx);
         Message_Draw(this);
     } else {
+        Switch2Debug_Phase(1, "game:play-draw");
         Play_DrawMain(this);
     }
 }
@@ -1627,6 +1629,7 @@ void Play_Main(GameState* thisx) {
         if (1) {
             this->state.gfxCtx = NULL;
         }
+        Switch2Debug_Phase(1, "game:play-update");
         Play_Update(this);
         this->state.gfxCtx = gfxCtx;
     }
@@ -1638,6 +1641,7 @@ void Play_Main(GameState* thisx) {
             *CONTROLLER1(&this->state) = D_801F6C18;
         }
         FrameInterpolation_StartRecord();
+        Switch2Debug_Phase(1, "game:play-draw");
         Play_Draw(this);
         FrameInterpolation_StopRecord();
         *CONTROLLER1(&this->state) = input;

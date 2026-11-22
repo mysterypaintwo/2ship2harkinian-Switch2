@@ -1,4 +1,5 @@
 #include "prevent_bss_reordering.h"
+#include "ship/port/switch/Switch2Debug.h"
 #include "z64.h"
 #include "regs.h"
 #include "functions.h"
@@ -263,6 +264,8 @@ void Graph_ExecuteAndDraw(GraphicsContext* gfxCtx, GameState* gameState) {
 
     gameState->unk_A3 = 0;
     Graph_SetNextGfxPool(gfxCtx);
+
+    Switch2Debug_Phase(1, "game:state-update");
 
     GameState_Update(gameState);
 

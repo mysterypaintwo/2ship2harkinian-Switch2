@@ -49,5 +49,5 @@ and Linux:
 - "Outdated ROM Archive": the file was made by another major version. Make it
   again with the PC build from this release.
 - Nothing happens or the game closes: send `/switch/2s2h/logs/` from the SD
-  card with your report. After a crash, the folder also has a
-  `crash-<date>.txt` file.
+  card with your report. Some crashes also leave a `crash-<date>.txt` file
+  there.
