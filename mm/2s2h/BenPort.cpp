@@ -689,6 +689,14 @@ void OTRGlobals::Initialize() {
 
     SPDLOG_INFO("Starting 2 Ship 2 Harkinian version {} (Branch: {} | Commit: {})", (char*)gBuildVersion,
                 (char*)gGitBranch, (char*)gGitCommitHash);
+#ifdef __SWITCH__
+    {
+        // At the top of each crash report, to find the matching .elf.
+        static std::string sBuildInfo = std::string((char*)gBuildVersion) + " (" + (char*)gGitBranch + " " +
+                                        (char*)gGitCommitHash + ")";
+        LusSwitch_SetBuildInfo(sBuildInfo.c_str());
+    }
+#endif
 
     auto loader = context->GetResourceManager()->GetResourceLoader();
     loader->RegisterResourceFactory(std::make_shared<Fast::ResourceFactoryBinaryTextureV0>(), RESOURCE_FORMAT_BINARY,
@@ -858,6 +866,9 @@ static struct {
 } audio;
 
 void OTRAudio_Thread() {
+#ifdef __SWITCH__
+    LusSwitch_SetThreadName("audio");
+#endif
     while (audio.running) {
         {
             std::unique_lock<std::mutex> Lock(audio.mutex);

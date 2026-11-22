@@ -44,4 +44,16 @@ if unzip -l "$BUILD/2s2h-switch2.zip" | grep -q "mm.o2r"; then
     exit 1
 fi
 
+# Keep the ELF of this NRO next to the zip (not in it). Crash reports
+# (logs/crash-*.txt) give code offsets that only this ELF can resolve:
+#   aarch64-none-elf-addr2line -Cfipe 2ship-<commit>.elf 0x<offset> ...
+COMMIT=$(git -C "$ROOT" rev-parse --short HEAD 2>/dev/null || echo unknown)
+for elf in "$BUILD/mm/2ship.elf" "$BUILD/mm/2ship"; do
+    if [ -f "$elf" ]; then
+        cp "$elf" "$BUILD/2ship-$COMMIT.elf"
+        echo "ELF for crash reports: $BUILD/2ship-$COMMIT.elf"
+        break
+    fi
+done
+
 echo "Done: $BUILD/2s2h-switch2.zip"
