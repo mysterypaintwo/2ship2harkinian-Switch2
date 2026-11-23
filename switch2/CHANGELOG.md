@@ -2,13 +2,18 @@
 
 ## v1.1
 
+**Added**
+- A reminder at startup that - opens the menu.
+
 **Improved**
 - Less stutter in cutscenes and new areas. More shaders are prepared during boot.
 - Clearing or resetting controls no longer freezes the game.
+- The quit option is now called Quit Game.
 
 **Fixed**
 - The controls menu now shows Nintendo button names (A, B, X, Y, L, R, ZL, ZR, + and -).
 - Missing game files now show a clear message. Press A to return to the Homebrew Menu.
+- Clearing all controls no longer turns off gyro aiming.
 
 **Updating:** replace the files in `/switch/2s2h/` and keep your `mm.o2r`. The
 first launch takes longer while it prepares shaders.

@@ -168,6 +168,9 @@ void SetupGuiElements() {
     mNotificationWindow = std::make_shared<Notification::Window>("gWindows.Notifications", "Notifications Window");
     gui->AddGuiWindow(mNotificationWindow);
     mNotificationWindow->Show();
+#ifdef __SWITCH__
+    Notification::Emit({ .message = "Press - to access enhancements menu", .remainingTime = 10.0f });
+#endif
 
     mRandoCheckTrackerWindow = std::make_shared<Rando::CheckTracker::CheckTrackerWindow>(
         "gWindows.CheckTracker", "Check Tracker", ImVec2(375, 460));

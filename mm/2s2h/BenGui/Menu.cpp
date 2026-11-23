@@ -737,10 +737,10 @@ void Menu::DrawElement() {
     UIWidgets::ButtonOptions options = {};
     options.color = UIWidgets::Colors::Red;
     options.size = UIWidgets::Sizes::Inline;
-    options.tooltip = "Quit 2S2H";
+    options.tooltip = "Quit Game";
     if (UIWidgets::Button(ICON_FA_POWER_OFF, options)) {
         BenGui::mModalWindow->RegisterPopup(
-            "Quit 2S2H", "Are you sure you want to quit 2S2H?", "Quit", "Cancel",
+            "Quit Game", "Are you sure you want to quit?", "Quit Game", "Cancel",
             []() {
                 std::shared_ptr<Menu> menu =
                     static_pointer_cast<Menu>(Ship::Context::GetRawInstance()->GetWindow()->GetGui()->GetMenu());

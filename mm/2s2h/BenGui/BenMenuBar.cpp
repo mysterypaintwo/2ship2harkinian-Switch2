@@ -73,7 +73,7 @@ void DrawBenMenu() {
             SDL_OpenURL(std::string("file:///" + std::filesystem::absolute(filesPath).string()).c_str());
         }
 
-        if (UIWidgets::MenuItem("Quit")) {
+        if (UIWidgets::MenuItem("Quit Game")) {
             Ship::Context::GetRawInstance()->GetWindow()->Close();
         }
 #endif
