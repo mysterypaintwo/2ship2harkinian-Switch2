@@ -14,6 +14,7 @@
 - The controls menu now shows Nintendo button names (A, B, X, Y, L, R, ZL, ZR, + and -).
 - Missing game files now show a clear message. Press A to return to the Homebrew Menu.
 - Clearing all controls no longer turns off gyro aiming.
+- With right stick aiming on, moving the stick no longer leaves first person or uses a C button item.
 
 **Updating:** replace the files in `/switch/2s2h/` and keep your `mm.o2r`. The
 first launch takes longer while it prepares shaders.

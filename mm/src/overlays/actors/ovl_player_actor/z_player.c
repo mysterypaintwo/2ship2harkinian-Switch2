@@ -13159,6 +13159,18 @@ void Player_Update(Actor* thisx, PlayState* play) {
             input.cur.button &= ~(BTN_CUP | BTN_B | BTN_A);
             input.press.button &= ~(BTN_CUP | BTN_B | BTN_A);
         }
+#ifdef __SWITCH__
+        // 2S2H [Port] The right stick is also mapped to the C buttons. While it aims in
+        // first person, it must not press them, which would leave the view or use an item.
+        if ((this->unk_AA5 != PLAYER_UNKAA5_0) &&
+            CVarGetInteger("gEnhancements.Camera.FirstPerson.RightStickEnabled", 0)) {
+            u32 aimButtons = 0;
+            aimButtons |= (input.cur.right_stick_x > 0) ? BTN_CRIGHT : ((input.cur.right_stick_x < 0) ? BTN_CLEFT : 0);
+            aimButtons |= (input.cur.right_stick_y > 0) ? BTN_CUP : ((input.cur.right_stick_y < 0) ? BTN_CDOWN : 0);
+            input.cur.button &= ~aimButtons;
+            input.press.button &= ~aimButtons;
+        }
+#endif
     }
 
     GameInteractor_ExecuteOnPassPlayerInputs(&input);
