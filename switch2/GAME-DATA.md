@@ -11,7 +11,7 @@ the PC tool below. Other PC versions can make data that does not work.
 ## Steps
 
 1. Download the PC build for your computer from the
-   [v1.0 Pre-Release page](https://github.com/mysterypaintwo/2ship2harkinian-Switch2/releases/tag/v1.0-pre):
+   [PC tools release](https://github.com/mysterypaintwo/2ship2harkinian-Switch2/releases/tag/v1.0-pre):
    - [Windows](https://github.com/mysterypaintwo/2ship2harkinian-Switch2/releases/download/v1.0-pre/2ship-windows.zip)
    - [macOS](https://github.com/mysterypaintwo/2ship2harkinian-Switch2/releases/download/v1.0-pre/2ship-mac.zip)
    - [Linux](https://github.com/mysterypaintwo/2ship2harkinian-Switch2/releases/download/v1.0-pre/2ship-linux.zip)

@@ -1,14 +1,14 @@
-2 SHIP 2 HARKINIAN FOR SWITCH 2 - v1.0 PRE-RELEASE 2
-====================================================
+2 SHIP 2 HARKINIAN FOR SWITCH 2 - v1.0
+======================================
 
-Unofficial test build for a Switch 2 that can run homebrew. Back up any saves
-you care about. See CHANGELOG.md for what's new.
+Unofficial port for a Switch 2 that can run homebrew. See CHANGELOG.md for
+what's new.
 
 
 INSTALL
 1. Copy the "switch" folder to the root of your SD card, replacing old files.
 
-2. Already have mm.o2r from v1.0 Pre-Release? Keep it.
+2. Already have mm.o2r from the pre-release? Keep it.
    Otherwise, make it from your own US ROM by following GAME-DATA.md.
 
 3. Check that /switch/2s2h/ has:

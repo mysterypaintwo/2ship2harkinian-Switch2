@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.0 Pre-Release 2
+## v1.0
 
 **Added**
 - Gyro aiming in first person. Turn it on in Enhancements > Camera > Gyro Aiming.
@@ -19,7 +19,7 @@
 **Updating:** replace the files in `/switch/2s2h/` and keep your `mm.o2r`. The
 first launch takes longer while it prepares shaders.
 
-## v1.0 Pre-Release
+## Pre-Release
 
 - Fixed missing or broken music and sound.
 - Fixed the crash during the title sequence.
