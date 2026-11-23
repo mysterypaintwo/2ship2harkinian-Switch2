@@ -40,7 +40,6 @@
 
 #ifdef __SWITCH__
 #include <ship/port/switch/SwitchImpl.h>
-#include <ship/port/switch/SwitchLoading.h>
 #include <ship/port/switch/SwitchShaderCache.h>
 #include "SwitchShaderSeed.h"
 #include <dirent.h>
@@ -128,6 +127,7 @@ CrowdControl* CrowdControl::Instance;
 #include <ship/window/gui/resource/FontFactory.h>
 #include "2s2h/Enhancements/Audio/AudioCollection.h"
 #include "ship/port/switch/Switch2Debug.h"
+#include "ship/port/switch/SwitchLoading.h"
 #include "BenGui/BenInputEditorWindow.h"
 
 OTRGlobals* OTRGlobals::Instance;
