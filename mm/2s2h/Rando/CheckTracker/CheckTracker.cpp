@@ -634,6 +634,17 @@ void CheckTrackerWindow::Draw() {
     ImGui::PopStyleVar(1);
 }
 
+// The color of a check state. On Switch 2 the fixed offset beside the dropdown does
+// not fit the larger UI, so the picker gets its own labeled row.
+static void DrawCheckColorPicker(const char* label, const char* cvar, Color_RGBA8 defaultColor) {
+#ifdef __SWITCH2__
+    UIWidgets::CVarColorPicker(label, cvar, defaultColor, true);
+#else
+    ImGui::SameLine(ImGui::GetContentRegionAvail().x - 155.0f);
+    UIWidgets::CVarColorPicker((std::string("##") + label).c_str(), cvar, defaultColor, true);
+#endif
+}
+
 void SettingsWindow::DrawElement() {
     if (CVarGetInteger("gWindows.CheckTracker", 0)) {
         UIWidgets::WindowButton("Disable Check Tracker", "gWindows.CheckTracker", BenGui::mRandoCheckTrackerWindow,
@@ -654,9 +665,7 @@ void SettingsWindow::DrawElement() {
                                     .ComponentAlignment(UIWidgets::ComponentAlignment::Right)
                                     .LabelPosition(UIWidgets::LabelPosition::Far));
         if (CVAR_OUT_OF_LOGIC_MODE == 1) {
-            ImGui::SameLine(ImGui::GetContentRegionAvail().x - 155.0f);
-            UIWidgets::CVarColorPicker("##OutOfLogicColor", CVAR_NAME_OUT_OF_LOGIC_COLOR ".Value",
-                                       { 255, 255, 255, 100 }, true);
+            DrawCheckColorPicker("Out of Logic Color", CVAR_NAME_OUT_OF_LOGIC_COLOR ".Value", { 255, 255, 255, 100 });
         }
         UIWidgets::CVarCombobox("Collected Checks", CVAR_NAME_COLLECTED_MODE, &sCheckModes,
                                 UIWidgets::ComboboxOptions()
@@ -664,9 +673,7 @@ void SettingsWindow::DrawElement() {
                                     .ComponentAlignment(UIWidgets::ComponentAlignment::Right)
                                     .LabelPosition(UIWidgets::LabelPosition::Far));
         if (CVAR_COLLECTED_MODE == 1) {
-            ImGui::SameLine(ImGui::GetContentRegionAvail().x - 155.0f);
-            UIWidgets::CVarColorPicker("##CollectedColor", CVAR_NAME_COLLECTED_COLOR ".Value", { 100, 255, 100, 255 },
-                                       true);
+            DrawCheckColorPicker("Collected Color", CVAR_NAME_COLLECTED_COLOR ".Value", { 100, 255, 100, 255 });
         }
         UIWidgets::CVarCombobox("Skipped Checks", CVAR_NAME_SKIPPED_MODE, &sCheckModes,
                                 UIWidgets::ComboboxOptions()
@@ -674,9 +681,7 @@ void SettingsWindow::DrawElement() {
                                     .ComponentAlignment(UIWidgets::ComponentAlignment::Right)
                                     .LabelPosition(UIWidgets::LabelPosition::Far));
         if (CVAR_SKIPPED_MODE == 1) {
-            ImGui::SameLine(ImGui::GetContentRegionAvail().x - 155.0f);
-            UIWidgets::CVarColorPicker("##SkippedColor", CVAR_NAME_SKIPPED_COLOR ".Value", { 255, 100, 255, 255 },
-                                       true);
+            DrawCheckColorPicker("Skipped Color", CVAR_NAME_SKIPPED_COLOR ".Value", { 255, 100, 255, 255 });
         }
         UIWidgets::CVarCheckbox("Only Show Current Scene", CVAR_NAME_SHOW_CURRENT_SCENE);
         UIWidgets::CVarCheckbox("Auto Scroll To Current Scene", CVAR_NAME_SCROLL_TO_SCENE,

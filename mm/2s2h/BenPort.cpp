@@ -40,6 +40,12 @@
 
 #ifdef __SWITCH__
 #include <ship/port/switch/SwitchImpl.h>
+#include <ship/port/switch/SwitchLoading.h>
+#include <ship/port/switch/SwitchShaderCache.h>
+#include "SwitchShaderSeed.h"
+#include <dirent.h>
+#include <set>
+#include <sys/stat.h>
 #endif
 
 #if not defined (__SWITCH__) && not defined(__WIIU__)
@@ -882,6 +888,7 @@ void OTRAudio_Thread() {
             }
         }
         std::unique_lock<std::mutex> Lock(audio.mutex);
+        SWITCH2_PROF(SW2P_AUDIO);
 // AudioMgr_ThreadEntry(&gAudioMgr);
 //  528 and 544 relate to 60 fps at 32 kHz 32000/60 = 533.333..
 //  in an ideal world, one third of the calls should use num_samples=544 and two thirds num_samples=528
@@ -1039,10 +1046,16 @@ bool VerifyArchiveVersion(ArchiveVersion version) {
 }
 
 extern "C" void InitOTR(int argc, char* argv[]) {
+    Switch2Debug_BootMark("start");
     OTRGlobals::Instance = new OTRGlobals();
+    Switch2Debug_BootMark("context");
+    SwitchLoading_Stage("Loading game data", 0.0f, 0.20f);
     OTRGlobals::Instance->RunExtract(argc, argv);
+    Switch2Debug_BootMark("archive-check");
 
     OTRGlobals::Instance->Initialize();
+    Switch2Debug_BootMark("initialize");
+    SwitchLoading_Update(1, 2);
 
     std::shared_ptr<Ship::Config> conf = OTRGlobals::Instance->context->GetConfig();
     conf->RegisterVersionUpdater(std::make_shared<Ben::ConfigVersion1Updater>());
@@ -1050,27 +1063,41 @@ extern "C" void InitOTR(int argc, char* argv[]) {
     conf->RunVersionUpdates();
     Ship::Context::GetRawInstance()->GetConsoleVariables()->Save();
 
+    Switch2Debug_BootMark("config");
     GameInteractor::Instance = new GameInteractor();
     AudioCollection::Instance = new AudioCollection();
+    Switch2Debug_BootMark("audio-collection");
     LoadGuiTextures();
+    Switch2Debug_BootMark("gui-textures");
     ModMenu_LoadArchives();
+    Switch2Debug_BootMark("mods");
     BenGui::SetupGuiElements();
+    Switch2Debug_BootMark("gui-setup");
     ShipInit::InitAll();
+    Switch2Debug_BootMark("ship-init");
     Rando::Init();
+    Switch2Debug_BootMark("rando");
     GfxPatcher_ApplyNecessaryAuthenticPatches();
+    Switch2Debug_BootMark("gfx-patches");
     DebugConsole_Init();
     GameInteractor::Instance->RegisterOwnHooks();
     CustomItem::RegisterHooks();
     CustomMessage::RegisterHooks();
     Rando::StaticData::PopulateCheckNames();
+    Switch2Debug_BootMark("hooks");
+    SwitchLoading_Update(2, 2);
 
     OTRMessage_Init();
+    Switch2Debug_BootMark("messages");
     OTRAudio_Init();
+    Switch2Debug_BootMark("audio-precache");
     Switch2Debug_Phase(1, "init:audio-done");
     OTRExtScanner();
     Switch2Debug_Phase(1, "init:ext-scanner-done");
+    Switch2Debug_BootMark("ext-scanner");
     PlayerCustomFlipbooks_Patch();
     Switch2Debug_Phase(1, "init:flipbooks-done");
+    Switch2Debug_BootMark("flipbooks");
 
     // Just came up with arbitrary numbers that seemed to work, this is
     // usually set once(?) in currently stubbed out areas of code.
@@ -1099,6 +1126,58 @@ extern "C" void InitOTR(int argc, char* argv[]) {
 
     Ship::Context::GetRawInstance()->GetFileDropMgr()->RegisterDropHandler(BinarySaveConverter_HandleFileDropped);
     Ship::Context::GetRawInstance()->GetFileDropMgr()->RegisterDropHandler(SaveManager_HandleFileDropped);
+}
+
+// Builds known shaders behind the loading screen, then hands over to the game.
+extern "C" void OTRPrepareShaders() {
+#ifdef __SWITCH__
+    auto wnd = std::dynamic_pointer_cast<Fast::Fast3dWindow>(Ship::Context::GetRawInstance()->GetWindow());
+    auto interpreter = wnd != nullptr ? wnd->GetInterpreterWeak().lock() : nullptr;
+    if (interpreter != nullptr) {
+        SwitchShaderCache_Open();
+        std::vector<std::pair<uint64_t, uint64_t>> shaders;
+        std::set<std::pair<uint64_t, uint64_t>> seen;
+        for (const auto& entry : kSwitchShaderSeed) {
+            if (seen.insert({ entry[0], entry[1] }).second) {
+                shaders.push_back({ entry[0], entry[1] });
+            }
+        }
+        for (const auto& entry : SwitchShaderCache_KnownShaders()) {
+            if (seen.insert(entry).second) {
+                shaders.push_back(entry);
+            }
+        }
+        SwitchLoading_Stage("Preparing shaders", 0.60f, 0.72f);
+        interpreter->PrepareShaders(shaders, SwitchLoading_Update);
+        SwitchShaderCache_ReleaseBinaries();
+        Switch2Debug_BootMark("shaders");
+        SwitchLoading_Stage("Preparing graphics", 0.72f, 1.0f);
+        const unsigned long warmStart = Switch2Debug_Micros();
+        interpreter->WarmShaders(shaders, SwitchLoading_Update);
+        Switch2Debug_BootMark("graphics");
+        if (Switch2Debug_Enabled()) {
+            // How much the driver has saved on the SD card, to compare between runs.
+            unsigned long long driverBytes = 0;
+            int driverFiles = 0;
+            const std::string driverDir = "sdmc:/config/ouncevk/shader-cache";
+            if (DIR* dir = opendir(driverDir.c_str())) {
+                while (dirent* entry = readdir(dir)) {
+                    struct stat info = {};
+                    if (stat((driverDir + "/" + entry->d_name).c_str(), &info) == 0 && S_ISREG(info.st_mode)) {
+                        driverBytes += info.st_size;
+                        driverFiles++;
+                    }
+                }
+                closedir(dir);
+            }
+            char line[128];
+            snprintf(line, sizeof(line), "B graphics-warmup shaders=%zu ms=%lu driver-cache files=%d kb=%llu",
+                     shaders.size(), (Switch2Debug_Micros() - warmStart) / 1000, driverFiles, driverBytes / 1024);
+            Switch2Debug_Log(line);
+        }
+    }
+    SwitchLoading_Finish();
+#endif
 }
 
 extern "C" void SaveManager_ThreadPoolWait() {
@@ -1263,7 +1342,9 @@ void RunCommands(Gfx* Commands, int time, int step, int denom, int count) {
     }
 
     // Process window events for resize, mouse, keyboard events
+    Switch2Prof_Begin(SW2P_EVENTS);
     wnd->HandleEvents();
+    Switch2Prof_End(SW2P_EVENTS);
 
     auto intp = wnd->GetInterpreterWeak().lock().get();
     intp->mInterpolationIndex = 0;
@@ -1338,6 +1419,7 @@ extern "C" void Graph_ProcessGfxCommands(Gfx* commands) {
     last_update_rate = R_UPDATE_RATE;
 
     {
+        SWITCH2_PROF(SW2P_AUDIO_WAIT);
         std::unique_lock<std::mutex> Lock(audio.mutex);
         while (audio.processing) {
             audio.cv_from_thread.wait(Lock);

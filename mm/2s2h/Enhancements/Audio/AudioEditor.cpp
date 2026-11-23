@@ -685,6 +685,15 @@ void AudioEditor::DrawElement() {
 
     UIWidgets::PushStyleTabs(THEME_COLOR);
     if (ImGui::BeginTabBar("SfxContextTabBar", ImGuiTabBarFlags_NoCloseWithMiddleMouseButton)) {
+#ifdef __SWITCH2__
+        // A clear line between the category tabs and the panel under them.
+        {
+            const ImRect bar = ImGui::GetCurrentTabBar()->BarRect;
+            const ImVec4 line = UIWidgets::ColorValues.at(THEME_COLOR);
+            ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(bar.Min.x, bar.Max.y), ImVec2(bar.Max.x, bar.Max.y + 3.0f),
+                                                      ImGui::GetColorU32(ImVec4(line.x, line.y, line.z, 1.0f)));
+        }
+#endif
         static ImVec2 cellPadding(8.0f, 8.0f);
         if (ImGui::BeginTabItem("Audio Options")) {
             ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, cellPadding);

@@ -1630,7 +1630,10 @@ void Play_Main(GameState* thisx) {
             this->state.gfxCtx = NULL;
         }
         Switch2Debug_Phase(1, "game:play-update");
+        Switch2Prof_SetScene(this->sceneId);
+        Switch2Prof_Begin(SW2P_PLAY_UPDATE);
         Play_Update(this);
+        Switch2Prof_End(SW2P_PLAY_UPDATE);
         this->state.gfxCtx = gfxCtx;
     }
 
@@ -1642,7 +1645,9 @@ void Play_Main(GameState* thisx) {
         }
         FrameInterpolation_StartRecord();
         Switch2Debug_Phase(1, "game:play-draw");
+        Switch2Prof_Begin(SW2P_PLAY_DRAW);
         Play_Draw(this);
+        Switch2Prof_End(SW2P_PLAY_DRAW);
         FrameInterpolation_StopRecord();
         *CONTROLLER1(&this->state) = input;
     }

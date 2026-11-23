@@ -47,7 +47,10 @@ s32 gScreenWidth = SCREEN_WIDTH;
 s32 gScreenHeight = SCREEN_HEIGHT;
 size_t gSystemHeapSize = 0;
 
+#include "ship/port/switch/Switch2Debug.h"
+#include "ship/port/switch/SwitchLoading.h"
 void InitOTR(int argc, char* argv[]);
+void OTRPrepareShaders(void);
 void Heaps_Free(void);
 #ifdef __GNUC__
 #define SDL_main main
@@ -74,7 +77,9 @@ int SDL_main(int argc, char* argv[] /* void* arg*/) {
 
     InitOTR(argc, argv);
     CrashHandlerRegisterCallback(CrashHandler_PrintExt);
+    SwitchLoading_Stage("Loading audio", 0.20f, 0.60f);
     Heaps_Alloc();
+    Switch2Debug_BootMark("heaps");
 
     gScreenWidth = SCREEN_WIDTH;
     gScreenHeight = SCREEN_HEIGHT;
@@ -100,6 +105,7 @@ int SDL_main(int argc, char* argv[] /* void* arg*/) {
 
     AudioMgr_Init(&sAudioMgr, STACK_TOP(sAudioStack), Z_PRIORITY_AUDIOMGR, Z_THREAD_ID_AUDIOMGR, &gSchedContext,
                   &gIrqMgr);
+    Switch2Debug_BootMark("audio-init");
 #if 0
     StackCheck_Init(&sSchedStackInfo, sSchedStack, STACK_TOP(sSchedStack), 0, 0x100, "sched");
     Sched_Init(&gSchedContext, STACK_TOP(sSchedStack), Z_PRIORITY_SCHED, gViConfigModeType, 1, &gIrqMgr);
@@ -119,6 +125,8 @@ int SDL_main(int argc, char* argv[] /* void* arg*/) {
     osCreateThread(&gGraphThread, Z_THREAD_ID_GRAPH, Graph_ThreadEntry, NULL, STACK_TOP(sGraphStack), Z_PRIORITY_GRAPH);
     osStartThread(&gGraphThread);
 #endif
+
+    OTRPrepareShaders();
 
     Graph_ThreadEntry(0);
 

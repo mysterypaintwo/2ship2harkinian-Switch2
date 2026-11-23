@@ -126,6 +126,7 @@ DmaHandler sDmaHandler; //= osEPiStartDma;
 void* sUnusedHandler = NULL;
 s32 gAudioCtxInitalized = false;
 
+#include "ship/port/switch/SwitchLoading.h"
 char** gSequenceMap;
 size_t gSequenceMapSize;
 u8 seqCachePolicyMap[MAX_AUTHENTIC_SEQID];
@@ -1275,6 +1276,7 @@ void AudioLoad_Init(void* heap, size_t heapSize) {
         SequenceData sDat = ResourceMgr_LoadSeqByName(seqList[i]);
         gSequenceMap[sDat.seqNumber] = strdup(seqList[i]);
         seqCachePolicyMap[sDat.seqNumber] = sDat.cachePolicy;
+        SwitchLoading_Update((int)i + 1, seqListSize * 2);
     }
 
     free(seqList);
@@ -1291,6 +1293,7 @@ void AudioLoad_Init(void* heap, size_t heapSize) {
     for (int i = 0; i < fntListSize; i++) {
         SoundFont* sf = ResourceMgr_LoadAudioSoundFontByName(fntList[i]);
         gFontMap[sf->fntIndex] = strdup(fntList[i]);
+        SwitchLoading_Update(fntListSize + i + 1, fntListSize * 2);
     }
 
     free(fntList);

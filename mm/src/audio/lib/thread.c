@@ -61,7 +61,7 @@ static u32 AudioDiag_Hash(const void* data, size_t size) {
 
 static void AudioDiag_Frame(void) {
     static u32 sCalls = 0;
-    if (!Switch2Debug_Enabled()) {
+    if (!Switch2Debug_Verbose()) {
         return;
     }
     AudioBufferParameters* b = &gAudioCtx.audioBufferParameters;

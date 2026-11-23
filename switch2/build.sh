@@ -36,8 +36,9 @@ cp "$BUILD/mm/2ship.nro" "$DIST/switch/2s2h/2ship.nro"
 cp "$ROOT/2ship.o2r" "$DIST/switch/2s2h/2ship.o2r"
 cp "$ROOT/switch2/PLAYER-README.txt" "$DIST/readme.txt"
 cp "$ROOT/switch2/GAME-DATA.md" "$DIST/GAME-DATA.md"
+cp "$ROOT/switch2/CHANGELOG.md" "$DIST/CHANGELOG.md"
 
-(cd "$DIST" && rm -f ../2s2h-switch2.zip && zip -qr ../2s2h-switch2.zip switch readme.txt GAME-DATA.md)
+(cd "$DIST" && rm -f ../2s2h-switch2.zip && zip -qr ../2s2h-switch2.zip switch readme.txt GAME-DATA.md CHANGELOG.md)
 
 if unzip -l "$BUILD/2s2h-switch2.zip" | grep -q "mm.o2r"; then
     echo "mm.o2r is in the zip. Do not share it." >&2

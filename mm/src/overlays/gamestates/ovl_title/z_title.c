@@ -161,7 +161,8 @@ void ConsoleLogo_Draw(GameState* thisx) {
     Matrix_RotateZYX(0, sTitleRotation, 0, MTXMODE_APPLY);
 
     MATRIX_FINALIZE_AND_LOAD(POLY_OPA_DISP++, this->state.gfxCtx);
-    gSPDisplayList(POLY_OPA_DISP++, gNintendo64LogoNDL);
+    // 2S2H [Port] Draw the logo chosen above, so the 2 Ship logo shows unless AuthenticLogo is on.
+    gSPDisplayList(POLY_OPA_DISP++, logoDL);
 
     Gfx_SetupDL39_Opa(this->state.gfxCtx);
 

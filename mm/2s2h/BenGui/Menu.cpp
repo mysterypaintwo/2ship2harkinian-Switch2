@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "Menu.h"
 #include "UIWidgets.hpp"
 #include "BenPort.h"
@@ -264,6 +265,15 @@ std::unordered_map<uint32_t, disabledInfo>& Menu::GetDisabledMap() {
 }
 
 void Menu::MenuDrawItem(WidgetInfo& widget, uint32_t width, UIWidgets::Colors menuThemeIndex) {
+#ifdef __SWITCH2__
+    // Labels wrap by character count. Use what really fits at this font size,
+    // leaving room for the checkbox and a small margin on the right.
+    {
+        const float charWidth = ImGui::CalcTextSize("M").x;
+        const float usable = ImGui::GetContentRegionAvail().x - ImGui::GetFontSize() * 2.5f - charWidth * 2.0f;
+        width = static_cast<uint32_t>(std::clamp(usable / charWidth, 12.0f, 200.0f));
+    }
+#endif
     disabledTempTooltip = "This setting is disabled because: \n\n";
     disabledValue = false;
     disabledTooltip = " ";
@@ -833,6 +843,11 @@ void Menu::DrawElement() {
     std::string sectionMenuId = sectionIndex + " Settings";
     int columns = sidebar->at(sectionIndex).columnCount;
     size_t columnFuncs = sidebar->at(sectionIndex).columnWidgets.size();
+#ifdef __SWITCH2__
+    // Some pages reserve more columns than they use. Give the empty ones' space
+    // to the columns that have content.
+    columns = std::clamp(columns, 1, std::max(static_cast<int>(columnFuncs), 1));
+#endif
     if (windowWidth < 800) {
         columns = 1;
     }
@@ -876,11 +891,17 @@ void Menu::DrawElement() {
                 ImGui::BeginChild(sectionId.c_str(), { columnWidth, windowHeight * 4 }, ImGuiChildFlags_AutoResizeY,
                                   ImGuiWindowFlags_NoTitleBar);
             }
+#ifdef __SWITCH2__
+            ImGui::PushTextWrapPos(0.0f);
+#endif
             // for (auto& entryName : sidebar->at(sectionIndex).sidebarOrder) {
             for (auto& entry : sidebar->at(sectionIndex).columnWidgets.at(i)) {
                 MenuDrawItem(entry, 90 / sidebar->at(sectionIndex).columnCount, menuThemeIndex);
             }
             //}
+#ifdef __SWITCH2__
+            ImGui::PopTextWrapPos();
+#endif
             if (useColumns) {
                 ImGui::EndChild();
             }

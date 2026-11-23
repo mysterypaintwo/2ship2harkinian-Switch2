@@ -266,8 +266,11 @@ void Graph_ExecuteAndDraw(GraphicsContext* gfxCtx, GameState* gameState) {
     Graph_SetNextGfxPool(gfxCtx);
 
     Switch2Debug_Phase(1, "game:state-update");
+    Switch2Prof_Tick();
 
+    Switch2Prof_Begin(SW2P_GAME);
     GameState_Update(gameState);
+    Switch2Prof_End(SW2P_GAME);
 
     OPEN_DISPS(gfxCtx);
 
