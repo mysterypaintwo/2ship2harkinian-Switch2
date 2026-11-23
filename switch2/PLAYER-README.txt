@@ -1,8 +1,17 @@
 2 SHIP 2 HARKINIAN FOR SWITCH 2 - v1.1
 ======================================
 
-Unofficial port for a Switch 2 that can run homebrew. See CHANGELOG.md for
-what's new.
+Unofficial port for a Switch 2 that can run homebrew.
+
+
+WHAT'S NEW IN v1.1
+- Less stutter in cutscenes and new areas.
+- Nintendo button names in the controls menu.
+- Clearing or resetting controls no longer freezes the game.
+- A clear message if game files are missing, and a reminder that - opens the
+  menu.
+- With right stick aiming on, moving the stick no longer leaves first person.
+See CHANGELOG.md for the full list.
 
 
 INSTALL

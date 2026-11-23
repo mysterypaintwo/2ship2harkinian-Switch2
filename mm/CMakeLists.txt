@@ -698,7 +698,7 @@ endif()
 
 nx_generate_nacp(2s2h.nacp
    NAME "${NACP_TITLE}"
-   AUTHOR "${PROJECT_TEAM}"
+   AUTHOR "${PROJECT_TEAM}, mysterypaint"
    VERSION "${NACP_VERSION}"
 )
 
