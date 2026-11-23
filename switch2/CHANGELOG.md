@@ -8,6 +8,7 @@
 
 **Fixed**
 - The controls menu now shows Nintendo button names (A, B, X, Y, L, R, ZL, ZR, + and -).
+- Missing game files now show a clear message. Press A to return to the Homebrew Menu.
 
 **Updating:** replace the files in `/switch/2s2h/` and keep your `mm.o2r`. The
 first launch takes longer while it prepares shaders.

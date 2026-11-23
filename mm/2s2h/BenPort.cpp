@@ -1046,6 +1046,10 @@ bool VerifyArchiveVersion(ArchiveVersion version) {
 }
 
 extern "C" void InitOTR(int argc, char* argv[]) {
+#ifdef __SWITCH__
+    Ship::Switch::RequireGameFiles("2 Ship 2 Harkinian", "/switch/2s2h/", { "mm.o2r", "2ship.o2r" }, {},
+                                   "See GAME-DATA.md in the download to prepare them.");
+#endif
     Switch2Debug_BootMark("start");
     OTRGlobals::Instance = new OTRGlobals();
     Switch2Debug_BootMark("context");
