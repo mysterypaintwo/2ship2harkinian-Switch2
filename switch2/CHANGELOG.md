@@ -15,6 +15,7 @@
 - Missing game files now show a clear message. Press A to return to the Homebrew Menu.
 - Clearing all controls no longer turns off gyro aiming.
 - With right stick aiming on, moving the stick no longer leaves first person or uses a C button item.
+- Holding Y no longer opens a window switcher.
 
 **Updating:** replace the files in `/switch/2s2h/` and keep your `mm.o2r`. The
 first launch takes longer while it prepares shaders.
