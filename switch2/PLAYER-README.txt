@@ -1,4 +1,4 @@
-2 SHIP 2 HARKINIAN FOR SWITCH 2 - v1.0
+2 SHIP 2 HARKINIAN FOR SWITCH 2 - v1.1
 ======================================
 
 Unofficial port for a Switch 2 that can run homebrew. See CHANGELOG.md for

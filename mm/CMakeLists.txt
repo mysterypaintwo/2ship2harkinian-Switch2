@@ -688,10 +688,18 @@ else()
     set(NACP_TITLE "2Ship 2Harkinian")
 endif()
 
+# The version shown in the homebrew menu. PROJECT_VERSION stays upstream's,
+# because mm.o2r is checked against it.
+if (NINTENDO_SWITCH2)
+    set(NACP_VERSION "1.1")
+else()
+    set(NACP_VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}")
+endif()
+
 nx_generate_nacp(2s2h.nacp
    NAME "${NACP_TITLE}"
    AUTHOR "${PROJECT_TEAM}"
-   VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}"
+   VERSION "${NACP_VERSION}"
 )
 
 nx_create_nro(2ship

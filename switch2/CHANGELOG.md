@@ -1,5 +1,17 @@
 # Changelog
 
+## v1.1
+
+**Improved**
+- Less stutter in cutscenes and new areas. More shaders are prepared during boot.
+- Clearing or resetting controls no longer freezes the game.
+
+**Fixed**
+- The controls menu now shows Nintendo button names (A, B, X, Y, L, R, ZL, ZR, + and -).
+
+**Updating:** replace the files in `/switch/2s2h/` and keep your `mm.o2r`. The
+first launch takes longer while it prepares shaders.
+
 ## v1.0
 
 **Added**
